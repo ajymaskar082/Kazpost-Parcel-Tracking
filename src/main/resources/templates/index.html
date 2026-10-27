@@ -141,6 +141,37 @@
         <p>Мәртебесі: <span class="status" th:text="${parcel.status}"></span></p>
     </div>
 
+    
+<section class="card" style="margin-top:25px">
+    <h2 style="margin-top:0">Сәлемдеме мәртебесін өзгерту</h2>
+
+    <form action="/parcel/status" method="post"
+          style="display:grid;gap:14px;max-width:500px">
+
+        <label for="trackingNumber">Трек-нөмір</label>
+        <input id="trackingNumber" name="trackingNumber"
+               type="text" placeholder="KZ100001" required
+               style="padding:12px;border:1px solid #ddd;border-radius:7px">
+
+        <label for="status">Жаңа мәртебе</label>
+        <select id="status" name="status" required
+                style="padding:12px;border:1px solid #ddd;border-radius:7px">
+            <option value="Қабылданды">Қабылданды</option>
+            <option value="Жолда">Жолда</option>
+            <option value="Бөлімшеде">Бөлімшеде</option>
+            <option value="Жеткізуге шықты">Жеткізуге шықты</option>
+            <option value="Жеткізілді">Жеткізілді</option>
+            <option value="Жіберушіге қайтарылды">Жіберушіге қайтарылды</option>
+        </select>
+
+        <button type="submit"
+                style="padding:13px;background:#c8102e;color:white;
+                       border:0;border-radius:7px;cursor:pointer">
+            Мәртебені сақтау
+        </button>
+    </form>
+</section>
+
     <h2>Сәлемдемелер тізімі</h2>
     <div class="table-wrap">
         <table>
