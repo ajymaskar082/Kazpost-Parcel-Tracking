@@ -1,7 +1,9 @@
 
 package kz.kazpost.service;
 
+import kz.kazpost.factory.ParcelFactory;
 import kz.kazpost.model.Parcel;
+import kz.kazpost.observer.ParcelObserver;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -14,39 +16,46 @@ import java.util.Optional;
 public class ParcelService {
 
     private final Map<String, Parcel> parcels = new LinkedHashMap<>();
+    private final List<ParcelObserver> observers = new ArrayList<>();
+    private final ParcelFactory parcelFactory;
 
-    public ParcelService() {
-        addParcel(new Parcel(
-                "KZ100001",
-                "Айжан",
-                "Аружан",
-                "Алматы",
-                "Астана",
-                "recipient1@example.com"
-        ));
+    public ParcelService(
+            ParcelFactory parcelFactory,
+            List<ParcelObserver> observers) {
 
-        addParcel(new Parcel(
-                "KZ100002",
-                "Нұрлан",
-                "Данияр",
-                "Шымкент",
-                "Алматы",
-                "recipient2@example.com"
-        ));
+        this.parcelFactory = parcelFactory;
+        this.observers.addAll(observers);
 
-        addParcel(new Parcel(
-                "KZ100003",
-                "Әлия",
-                "Мадина",
-                "Астана",
-                "Қарағанды",
-                "recipient3@example.com"
-        ));
+        addParcel(parcelFactory.createParcel(
+                "Айжан", "Аружан", "Алматы",
+                "Астана", "recipient1@example.com"));
+
+        addParcel(parcelFactory.createParcel(
+                "Нұрлан", "Данияр", "Шымкент",
+                "Алматы", "recipient2@example.com"));
+
+        addParcel(parcelFactory.createParcel(
+                "Әлия", "Мадина", "Астана",
+                "Қарағанды", "recipient3@example.com"));
     }
 
     public Parcel addParcel(Parcel parcel) {
         parcels.put(parcel.getTrackingNumber(), parcel);
         return parcel;
+    }
+
+    public Parcel createParcel(
+            String senderName,
+            String recipientName,
+            String senderCity,
+            String recipientCity,
+            String recipientEmail) {
+
+        Parcel parcel = parcelFactory.createParcel(
+                senderName, recipientName, senderCity,
+                recipientCity, recipientEmail);
+
+        return addParcel(parcel);
     }
 
     public Optional<Parcel> findByTrackingNumber(String trackingNumber) {
@@ -57,14 +66,21 @@ public class ParcelService {
         return new ArrayList<>(parcels.values());
     }
 
-    public boolean updateStatus(String trackingNumber, String status) {
+    public boolean updateStatus(String trackingNumber, String newStatus) {
         Optional<Parcel> result = findByTrackingNumber(trackingNumber);
 
         if (result.isEmpty()) {
             return false;
         }
 
-        result.get().setStatus(status);
+        Parcel parcel = result.get();
+        String oldStatus = parcel.getStatus();
+        parcel.setStatus(newStatus);
+
+        for (ParcelObserver observer : observers) {
+            observer.onStatusChanged(parcel, oldStatus, newStatus);
+        }
+
         return true;
     }
 
