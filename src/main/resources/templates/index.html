@@ -1,0 +1,179 @@
+
+<!DOCTYPE html>
+<html lang="kk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QazPost — Сәлемдеме трекингі</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f6fa;
+            color: #18243a;
+        }
+        header {
+            background: #c8102e;
+            color: white;
+            padding: 22px 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo { font-size: 25px; font-weight: bold; }
+        .logo span { color: #ffe5a3; }
+        header a { color: white; text-decoration: none; }
+        .hero {
+            background: linear-gradient(135deg, #b90e2b, #e53b50);
+            color: white;
+            padding: 65px 8% 80px;
+        }
+        .hero h1 { font-size: 38px; margin-bottom: 12px; }
+        .hero p { font-size: 17px; opacity: .95; }
+        .search {
+            display: flex;
+            max-width: 720px;
+            margin-top: 30px;
+            background: white;
+            border-radius: 10px;
+            padding: 7px;
+        }
+        .search input {
+            flex: 1;
+            min-width: 0;
+            border: none;
+            outline: none;
+            padding: 15px;
+            font-size: 16px;
+        }
+        .search button {
+            border: none;
+            border-radius: 7px;
+            padding: 0 24px;
+            background: #18243a;
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        main { max-width: 1100px; margin: -30px auto 50px; padding: 0 20px; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 4px 18px #17233a0b;
+        }
+        .number { font-size: 30px; font-weight: bold; color: #c8102e; }
+        h2 { margin-top: 35px; }
+        .table-wrap { overflow-x: auto; background: white; border-radius: 12px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 17px; border-bottom: 1px solid #edf0f4; }
+        th { background: #fafbfc; color: #667085; font-size: 13px; }
+        .status {
+            display: inline-block;
+            background: #fff1d6;
+            color: #925b00;
+            border-radius: 20px;
+            padding: 7px 11px;
+            font-size: 12px;
+        }
+        .error { color: #c8102e; margin-top: 15px; }
+        .success { color: #157347; margin-top: 15px; }
+        footer { text-align: center; padding: 25px; color: #687386; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 29px; }
+            .search button { padding: 0 12px; }
+            header { padding: 18px 5%; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="logo">QAZ<span>POST</span></div>
+    <a href="/">Басты бет</a>
+</header>
+
+<section class="hero">
+    <h1>Сәлемдемеңіз қайда?</h1>
+    <p>Трек-нөмір арқылы жеткізу мәртебесін жылдам тексеріңіз.</p>
+
+    <form class="search" action="/track" method="get">
+        <input type="text" name="number"
+               placeholder="Мысалы: KZ100001"
+               th:value="${searchNumber}"
+               aria-label="Трек-нөмір" required>
+        <button type="submit">Іздеу</button>
+    </form>
+
+    <p class="error" th:if="${error}" th:text="${error}"></p>
+</section>
+
+<main>
+    <div class="stats">
+        <div class="card">
+            <div>Жүйедегі сәлемдемелер</div>
+            <div class="number" th:text="${total != null ? total : 1}">3</div>
+        </div>
+        <div class="card">
+            <div>Трекинг қызметі</div>
+            <div class="number">24/7</div>
+            <div>Онлайн бақылау</div>
+        </div>
+        <div class="card">
+            <div>Жеткізу бағыты</div>
+            <div class="number">KZ</div>
+            <div>Қазақстан бойынша</div>
+        </div>
+    </div>
+
+    <div th:if="${parcel != null}" class="card" style="margin-top:25px">
+        <h2 style="margin-top:0">Іздеу нәтижесі</h2>
+        <p>Трек-нөмір: <strong th:text="${parcel.trackingNumber}"></strong></p>
+        <p>Жіберуші: <span th:text="${parcel.senderName}"></span></p>
+        <p>Алушы: <span th:text="${parcel.recipientName}"></span></p>
+        <p>Бағыт: <span th:text="${parcel.senderCity}"></span> →
+            <span th:text="${parcel.recipientCity}"></span></p>
+        <p>Мәртебесі: <span class="status" th:text="${parcel.status}"></span></p>
+    </div>
+
+    <h2>Сәлемдемелер тізімі</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Трек-нөмір</th>
+                <th>Жіберуші</th>
+                <th>Алушы</th>
+                <th>Бағыт</th>
+                <th>Мәртебесі</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${parcels}">
+                <td th:text="${item.trackingNumber}">KZ100001</td>
+                <td th:text="${item.senderName}">Айжан</td>
+                <td th:text="${item.recipientName}">Аружан</td>
+                <td>
+                    <span th:text="${item.senderCity}"></span> →
+                    <span th:text="${item.recipientCity}"></span>
+                </td>
+                <td><span class="status" th:text="${item.status}"></span></td>
+            </tr>
+            <tr th:if="${parcels == null or #lists.isEmpty(parcels)}">
+                <td colspan="5">Әзірге сәлемдемелер жоқ.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p class="success" th:if="${message}" th:text="${message}"></p>
+</main>
+
+<footer>QazPost Parcel Tracking · Сәлемдемені бақылау жүйесі</footer>
+</body>
+</html>
