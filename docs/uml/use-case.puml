@@ -1,0 +1,33 @@
+@startuml
+left to right direction
+
+actor "Жіберуші" as Sender
+actor "Алушы" as Recipient
+actor "Пошта қызметкері" as Operator
+
+rectangle "Қазпошта сәлемдемелерін жеткізу және трекинг жүйесі" {
+    usecase "Сәлемдемені тіркеу" as UC1
+    usecase "Трек-нөмір беру" as UC2
+    usecase "Сәлемдемені іздеу" as UC3
+    usecase "Сәлемдеме статусын көру" as UC4
+    usecase "Статусты жаңарту" as UC5
+    usecase "Статус тарихын көру" as UC6
+    usecase "Барлық сәлемдемелерді көру" as UC7
+}
+
+Sender --> UC1
+Sender --> UC3
+Sender --> UC4
+
+Recipient --> UC3
+Recipient --> UC4
+Recipient --> UC6
+
+Operator --> UC1
+Operator --> UC5
+Operator --> UC7
+
+UC1 .> UC2 : <<include>>
+UC4 .> UC6 : <<include>>
+
+@enduml
