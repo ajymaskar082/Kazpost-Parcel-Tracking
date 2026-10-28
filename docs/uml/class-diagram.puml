@@ -1,0 +1,81 @@
+
+@startuml
+skinparam classAttributeIconSize 0
+
+abstract class Person {
+  - name: String
+  - phone: String
+  + getName(): String
+}
+
+class Sender
+class Recipient
+
+Person <|-- Sender
+Person <|-- Recipient
+
+class Parcel {
+  - trackingNumber: String
+  - type: String
+  - status: DeliveryStatus
+  + getTrackingNumber(): String
+}
+
+class PostOffice {
+  - officeId: String
+  - address: String
+  - city: String
+}
+
+class TrackingEvent {
+  - dateTime: LocalDateTime
+  - description: String
+  - status: DeliveryStatus
+}
+
+enum DeliveryStatus {
+  ACCEPTED
+  IN_TRANSIT
+  ARRIVED_AT_OFFICE
+  DELIVERED
+  LOST
+}
+
+interface DeliveryStrategy {
+  + calculateDeliveryDays(): int
+}
+
+class StandardDeliveryStrategy
+class ExpressDeliveryStrategy
+
+DeliveryStrategy <|.. StandardDeliveryStrategy
+DeliveryStrategy <|.. ExpressDeliveryStrategy
+
+class ParcelService {
+  - parcels: Map
+  + registerParcel(): Parcel
+  + findParcel(): Parcel
+  + updateStatus(): void
+}
+
+class CsvStorage {
+  + save(): void
+  + load(): void
+}
+
+class TrackingNumberNotFoundException
+
+Exception <|-- TrackingNumberNotFoundException
+
+Sender "1" -- "0..*" Parcel : sends
+Recipient "1" -- "0..*" Parcel : receives
+PostOffice "0..1" -- "0..*" Parcel : processes
+Parcel "1" *-- "0..*" TrackingEvent : history
+TrackingEvent --> DeliveryStatus
+Parcel --> DeliveryStatus
+ParcelService --> Parcel
+ParcelService --> CsvStorage
+ParcelService ..> DeliveryStrategy
+ParcelService ..> TrackingNumberNotFoundException
+
+@enduml
