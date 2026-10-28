@@ -1,76 +1,77 @@
 
 @startuml
 skinparam classAttributeIconSize 0
+title Қазпошта сәлемдемелерін жеткізу және бақылау жүйесі
 
-abstract class Person {
-  - name: String
-  - phone: String
+abstract class "Тұлға" as Person {
+  - атыЖөні: String
+  - телефон: String
   + getName(): String
 }
 
-class Sender
-class Recipient
+class "Жіберуші" as Sender
+class "Алушы" as Recipient
 
 Person <|-- Sender
 Person <|-- Recipient
 
-class Parcel {
-  - trackingNumber: String
-  - type: String
-  - status: DeliveryStatus
+class "Сәлемдеме" as Parcel {
+  - трекНөмірі: String
+  - түрі: String
+  - статус: DeliveryStatus
   + getTrackingNumber(): String
 }
 
-class PostOffice {
-  - officeId: String
-  - address: String
-  - city: String
+class "Пошта бөлімшесі" as PostOffice {
+  - бөлімшеНөмірі: String
+  - мекенжайы: String
+  - қаласы: String
 }
 
-class TrackingEvent {
-  - dateTime: LocalDateTime
-  - description: String
-  - status: DeliveryStatus
+class "Бақылау оқиғасы" as TrackingEvent {
+  - күніУақыты: LocalDateTime
+  - сипаттамасы: String
+  - статусы: DeliveryStatus
 }
 
-enum DeliveryStatus {
-  ACCEPTED
-  IN_TRANSIT
-  ARRIVED_AT_OFFICE
-  DELIVERED
-  LOST
+enum "Жеткізу статусы" as DeliveryStatus {
+  ҚАБЫЛДАНДЫ
+  ЖОЛДА
+  БӨЛІМШЕГЕ_КЕЛДІ
+  ЖЕТКІЗІЛДІ
+  ЖОҒАЛДЫ
 }
 
-interface DeliveryStrategy {
-  + calculateDeliveryDays(): int
+interface "Жеткізу стратегиясы" as DeliveryStrategy {
+  + жеткізуКүнінЕсептеу(): int
 }
 
-class StandardDeliveryStrategy
-class ExpressDeliveryStrategy
+class "Стандартты жеткізу" as StandardDeliveryStrategy
+class "Жедел жеткізу" as ExpressDeliveryStrategy
 
 DeliveryStrategy <|.. StandardDeliveryStrategy
 DeliveryStrategy <|.. ExpressDeliveryStrategy
 
-class ParcelService {
-  - parcels: Map
-  + registerParcel(): Parcel
-  + findParcel(): Parcel
-  + updateStatus(): void
+class "Сәлемдеме қызметі" as ParcelService {
+  - сәлемдемелер: Map
+  + сәлемдемеТіркеу(): Parcel
+  + сәлемдемеІздеу(): Parcel
+  + статустыЖаңарту(): void
 }
 
-class CsvStorage {
-  + save(): void
-  + load(): void
+class "CSV файлмен жұмыс" as CsvStorage {
+  + сақтау(): void
+  + оқу(): void
 }
 
-class TrackingNumberNotFoundException
+class "Трек-нөмір табылмады қатесі" as TrackingNumberNotFoundException
 
 Exception <|-- TrackingNumberNotFoundException
 
-Sender "1" -- "0..*" Parcel : sends
-Recipient "1" -- "0..*" Parcel : receives
-PostOffice "0..1" -- "0..*" Parcel : processes
-Parcel "1" *-- "0..*" TrackingEvent : history
+Sender "1" -- "0..*" Parcel : жібереді
+Recipient "1" -- "0..*" Parcel : қабылдайды
+PostOffice "0..1" -- "0..*" Parcel : өңдейді
+Parcel "1" *-- "0..*" TrackingEvent : статус тарихы
 TrackingEvent --> DeliveryStatus
 Parcel --> DeliveryStatus
 ParcelService --> Parcel
