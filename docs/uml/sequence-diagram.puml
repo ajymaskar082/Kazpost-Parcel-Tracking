@@ -1,0 +1,23 @@
+
+@startuml
+title Сәлемдемені тіркеу процесі
+
+actor "Пошта қызметкері" as Operator
+participant "Пайдаланушы мәзірі" as Menu
+participant "Сәлемдеме қызметі" as Service
+participant "Сәлемдеме" as Parcel
+participant "CSV сақтау қызметі" as Storage
+
+Operator -> Menu : Сәлемдемені тіркеуді таңдайды
+Menu -> Operator : Жіберуші мен алушы мәліметтерін сұрайды
+Operator -> Menu : Мәліметтерді енгізеді
+Menu -> Service : registerParcel(мәліметтер)
+Service -> Parcel : Жаңа сәлемдеме құру
+Parcel --> Service : Сәлемдеме нысаны
+Service -> Service : Бірегей трек-нөмір тағайындау
+Service -> Storage : save(сәлемдеме)
+Storage --> Service : Сақтау нәтижесі
+Service --> Menu : Трек-нөмірді қайтару
+Menu --> Operator : Тіркеу сәтті аяқталды
+
+@enduml
