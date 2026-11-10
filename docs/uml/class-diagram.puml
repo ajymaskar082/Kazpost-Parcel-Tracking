@@ -5,7 +5,7 @@ skinparam shadowing false
 skinparam defaultFontName Arial
 skinparam linetype ortho
 
-title Қазпошта сәлемдемелерін жеткізу және трекинг жүйесі
+title Қазпошта сәлемдемелерін жеткізу және трекинг жүйесі 
 
 abstract class Person {
   - id: int
