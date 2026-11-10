@@ -1,33 +1,61 @@
+
 @startuml
 left to right direction
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 15
 
 actor "Жіберуші" as Sender
 actor "Алушы" as Recipient
 actor "Пошта қызметкері" as Operator
+actor "Курьер" as Courier
+actor "Әкімші" as Admin
+actor "Хабарландыру қызметі" as Notification
 
 rectangle "Қазпошта сәлемдемелерін жеткізу және трекинг жүйесі" {
-    usecase "Сәлемдемені тіркеу" as UC1
-    usecase "Трек-нөмір беру" as UC2
-    usecase "Сәлемдемені іздеу" as UC3
-    usecase "Сәлемдеме статусын көру" as UC4
-    usecase "Статусты жаңарту" as UC5
-    usecase "Статус тарихын көру" as UC6
-    usecase "Барлық сәлемдемелерді көру" as UC7
+
+ usecase "Сәлемдемені тіркеу" as UC1
+ usecase "Трек-нөмір беру" as UC2
+ usecase "Сәлемдемені іздеу" as UC3
+ usecase "Статусты көру" as UC4
+ usecase "Статус тарихын көру" as UC5
+ usecase "Статусты жаңарту" as UC6
+ usecase "Сәлемдемені тасымалдау" as UC7
+ usecase "Сәлемдемені жеткізу" as UC8
+ usecase "Хабарлама жіберу" as UC9
+ usecase "Есеп қалыптастыру" as UC10
+ usecase "CSV экспорттау" as UC11
+ usecase "Пайдаланушыларды басқару" as UC12
 }
 
 Sender --> UC1
 Sender --> UC3
 Sender --> UC4
+Sender --> UC5
 
 Recipient --> UC3
 Recipient --> UC4
-Recipient --> UC6
+Recipient --> UC5
 
 Operator --> UC1
-Operator --> UC5
-Operator --> UC7
+Operator --> UC6
+Operator --> UC10
+Operator --> UC11
 
-UC1 .> UC2 : <<include>>
-UC4 .> UC6 : <<include>>
+Courier --> UC7
+Courier --> UC8
+Courier --> UC6
+
+Admin --> UC10
+Admin --> UC11
+Admin --> UC12
+
+Notification --> UC9
+
+UC1 ..> UC2 : <<include>>
+UC6 ..> UC9 : <<include>>
+UC10 ..> UC11 : <<include>>
 
 @enduml
