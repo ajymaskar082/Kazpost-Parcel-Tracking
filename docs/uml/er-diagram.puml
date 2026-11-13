@@ -1,0 +1,55 @@
+@startuml
+title Қазпошта — SQLite деректер қорының ER диаграммасы
+hide circle
+skinparam linetype ortho
+
+entity "senders" as senders {
+  * sender_id : INTEGER <<PK>>
+  --
+  full_name : TEXT
+  phone : TEXT
+  address : TEXT
+}
+
+entity "recipients" as recipients {
+  * recipient_id : INTEGER <<PK>>
+  --
+  full_name : TEXT
+  phone : TEXT
+  address : TEXT
+}
+
+entity "post_offices" as offices {
+  * office_id : INTEGER <<PK>>
+  --
+  office_code : TEXT
+  address : TEXT
+  city : TEXT
+}
+
+entity "parcels" as parcels {
+  * parcel_id : INTEGER <<PK>>
+  --
+  tracking_number : TEXT <<UNIQUE>>
+  sender_id : INTEGER <<FK>>
+  recipient_id : INTEGER <<FK>>
+  office_id : INTEGER <<FK>>
+  weight : REAL
+  status : TEXT
+  created_at : TEXT
+}
+
+entity "tracking_events" as events {
+  * event_id : INTEGER <<PK>>
+  --
+  parcel_id : INTEGER <<FK>>
+  status : TEXT
+  description : TEXT
+  event_date : TEXT
+}
+
+senders ||--o{ parcels : жібереді
+recipients ||--o{ parcels : қабылдайды
+offices ||--o{ parcels : өңдейді
+parcels ||--o{ events : статус тарихы
+@enduml
