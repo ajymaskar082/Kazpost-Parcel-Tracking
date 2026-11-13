@@ -7,8 +7,6 @@ IN_TRANSIT --> ARRIVED_AT_OFFICE : бөлімшеге келді
 ARRIVED_AT_OFFICE --> IN_TRANSIT : келесі бөлімшеге жіберілді
 ARRIVED_AT_OFFICE --> DELIVERED : алушыға тапсырылды
 IN_TRANSIT --> LOST : жоғалғаны анықталды
-REGISTERED --> CANCELLED : тіркеу тоқтатылды
 DELIVERED --> [*]
 LOST --> [*]
-CANCELLED --> [*]
 @enduml
