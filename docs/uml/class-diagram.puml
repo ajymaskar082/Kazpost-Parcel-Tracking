@@ -1,0 +1,137 @@
+@startuml
+title Қазпошта — сәлемдемелерді жеткізу және трекинг жүйесінің Class Diagram-ы
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+abstract class Person {
+  - id: int
+  - fullName: String
+  - phone: String
+  - address: String
+  + getFullName(): String
+  + getPhone(): String
+  + getAddress(): String
+}
+
+class Sender {
+  + sendParcel(): void
+}
+
+class Recipient {
+  + receiveParcel(): void
+}
+
+class PostOffice {
+  - officeId: int
+  - officeCode: String
+  - address: String
+  - city: String
+  + getOfficeInfo(): String
+}
+
+class Parcel {
+  - trackingNumber: String
+  - weight: double
+  - createdAt: LocalDateTime
+  - status: DeliveryStatus
+  - sender: Sender
+  - recipient: Recipient
+  - postOffice: PostOffice
+  - trackingHistory: List<TrackingEvent>
+  + getTrackingNumber(): String
+  + getStatus(): DeliveryStatus
+  + updateStatus(status: DeliveryStatus): void
+  + addTrackingEvent(event: TrackingEvent): void
+  + getTrackingHistory(): List<TrackingEvent>
+}
+
+class TrackingEvent {
+  - eventId: int
+  - status: DeliveryStatus
+  - eventDate: LocalDateTime
+  - description: String
+  + getEventInfo(): String
+}
+
+enum DeliveryStatus {
+  REGISTERED
+  ACCEPTED
+  IN_TRANSIT
+  ARRIVED_AT_OFFICE
+  DELIVERED
+  LOST
+}
+
+class ParcelService {
+  - parcels: Map<String, Parcel>
+  - repository: Repository<Parcel>
+  - strategy: DeliveryStrategy
+  + registerParcel(parcel: Parcel): void
+  + findParcel(number: String): Parcel
+  + updateStatus(number: String, status: DeliveryStatus): void
+  + getAllParcels(): List<Parcel>
+  + getStatistics(): Map<DeliveryStatus, Long>
+}
+
+interface DeliveryStrategy {
+  + calculateDeliveryCost(parcel: Parcel): double
+}
+
+class StandardDeliveryStrategy {
+  + calculateDeliveryCost(parcel: Parcel): double
+}
+
+class ExpressDeliveryStrategy {
+  + calculateDeliveryCost(parcel: Parcel): double
+}
+
+interface Repository<T> {
+  + save(entity: T): void
+  + findById(id: String): Optional<T>
+  + findAll(): List<T>
+}
+
+class ParcelDao {
+  - connection: Connection
+  + save(parcel: Parcel): void
+  + findById(id: String): Optional<Parcel>
+  + findAll(): List<Parcel>
+  + updateStatus(parcel: Parcel): void
+}
+
+class DatabaseConnection {
+  + getConnection(): Connection
+}
+
+class TrackingNumberGenerator {
+  + generate(): String
+}
+
+class CsvStorage {
+  + exportToCsv(parcels: List<Parcel>): void
+}
+
+class TrackingNumberNotFoundException {
+  + TrackingNumberNotFoundException(message: String)
+}
+
+Person <|-- Sender
+Person <|-- Recipient
+DeliveryStrategy <|.. StandardDeliveryStrategy
+DeliveryStrategy <|.. ExpressDeliveryStrategy
+Repository <|.. ParcelDao
+
+Sender "1" -- "0..*" Parcel : жібереді
+Recipient "1" -- "0..*" Parcel : қабылдайды
+PostOffice "1" -- "0..*" Parcel : өңдейді
+Parcel "1" *-- "0..*" TrackingEvent : статус тарихы
+Parcel --> DeliveryStatus : ағымдағы статус
+
+ParcelService --> Repository : қолданады
+ParcelService --> TrackingNumberGenerator
+ParcelService --> DeliveryStrategy
+ParcelService --> CsvStorage
+ParcelDao --> DatabaseConnection
+ParcelService ..> TrackingNumberNotFoundException
+@enduml
