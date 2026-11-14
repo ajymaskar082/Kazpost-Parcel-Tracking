@@ -74,6 +74,13 @@ class ParcelServiceIntegrationTest {
     }
 
     @Test
+    void streamMapReturnsTrackingNumbers() throws Exception {
+        ParcelService service = createService();
+        Parcel created = createParcel(service);
+        assertTrue(service.getParcelTrackingNumbers().contains(created.getTrackingNumber()));
+    }
+
+    @Test
     void csvReportIsExported() throws Exception {
         ParcelService service = createService();
         createParcel(service);
