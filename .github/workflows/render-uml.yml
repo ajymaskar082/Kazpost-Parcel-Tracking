@@ -33,7 +33,6 @@ jobs:
             sed -n '1,5p' "$file"
             grep -n '@startuml\|@enduml' "$file" || true
           done
-          plantuml -version
 
       - name: Render PlantUML files individually
         run: |
