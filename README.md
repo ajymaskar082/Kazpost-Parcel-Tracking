@@ -67,7 +67,7 @@ Kazpost-Parcel-Tracking/
 - `DeliveryStatus` — жеткізу статустарының `enum` түрі.
 - `ParcelService` — сәлемдемелерді басқару логикасы.
 
-Қосымша жобалық элементтер Class Diagram-да көрсетілген: абстрактілі `Person`, `DeliveryStrategy` интерфейсі, Generic `Repository<T>`, DAO және сақтау компоненттері.
+Қосымша жобалық элементтер Class Diagram-да көрсетілген: абстрактілі `Person`, `DeliveryStrategy` интерфейсі, Generic абстрактілі `Repository<T>` класы, `List`, `Set`, `Map`, DAO және сақтау компоненттері.
 
 ## 7. Қазіргі кезеңнің шекарасы
 
