@@ -20,6 +20,7 @@
 ```text
 Kazpost-Parcel-Tracking/
 ├── README.md
+├── .gitignore
 └── docs/
     ├── research.md
     └── uml/
