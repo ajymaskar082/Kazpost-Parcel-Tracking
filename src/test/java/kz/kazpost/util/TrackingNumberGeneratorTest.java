@@ -16,6 +16,16 @@ class TrackingNumberGeneratorTest {
     }
 
     @Test
+    void generatorProducesDifferentValuesAcrossRepeatedCalls() {
+        TrackingNumberGenerator generator = new TrackingNumberGenerator();
+        Set<String> numbers = new HashSet<>();
+        for (int index = 0; index < 50; index++) {
+            numbers.add(generator.generate());
+        }
+        assertEquals(50, numbers.size());
+    }
+
+    @Test
     void uniqueGeneratorSkipsExistingNumbers() {
         TrackingNumberGenerator generator = new TrackingNumberGenerator();
         Set<String> existing = new HashSet<>();
