@@ -65,6 +65,7 @@ enum DeliveryStatus {
 
 class ParcelService {
   - parcels: Map<String, Parcel>
+  - registeredTrackingNumbers: Set<String>
   - repository: Repository<Parcel>
   - strategy: DeliveryStrategy
   + registerParcel(parcel: Parcel): void
@@ -86,7 +87,7 @@ class ExpressDeliveryStrategy {
   + calculateDeliveryCost(parcel: Parcel): double
 }
 
-interface Repository<T> {
+abstract class Repository<T> {
   + save(entity: T): void
   + findById(id: String): Optional<T>
   + findAll(): List<T>
@@ -120,7 +121,7 @@ Person <|-- Sender
 Person <|-- Recipient
 DeliveryStrategy <|.. StandardDeliveryStrategy
 DeliveryStrategy <|.. ExpressDeliveryStrategy
-Repository <|.. ParcelDao
+Repository <|-- ParcelDao
 
 Sender "1" -- "0..*" Parcel : жібереді
 Recipient "1" -- "0..*" Parcel : қабылдайды
