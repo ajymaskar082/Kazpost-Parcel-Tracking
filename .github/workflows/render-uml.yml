@@ -56,11 +56,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git pull --rebase origin main
           git add docs/uml/*.png
           if git diff --cached --quiet; then
             echo "PNG files are already up to date."
             exit 0
           fi
           git commit -m "Regenerate UML PNG diagrams from PlantUML sources"
+          git pull --rebase origin main
           git push
