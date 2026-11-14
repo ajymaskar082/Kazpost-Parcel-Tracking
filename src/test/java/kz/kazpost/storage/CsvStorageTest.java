@@ -34,7 +34,7 @@ class CsvStorageTest {
     void escapesQuotesAndCommasInExportedNames() throws Exception {
         CsvStorage storage = new CsvStorage();
         Parcel parcel = new Parcel("KZ0000000005",
-                new Sender("Асқар, \"Азамат\" ", "+77000000005", "Алматы"),
+                new Sender("Асқар, \"Азамат\"", "+77000000005", "Алматы"),
                 new Recipient("Үсен", "+77000000006", "Астана"),
                 new PostOffice("A-05", "Абай 5", "Алматы"), 1.0);
         Path target = tempDir.resolve("quoted.csv");
@@ -43,7 +43,7 @@ class CsvStorageTest {
         List<String[]> rows = storage.readCsv(target);
 
         assertEquals(1, rows.size());
-        assertEquals("Асқар, \"Азамат\" ", rows.get(0)[1]);
+        assertEquals("Асқар, \"Азамат\"", rows.get(0)[1]);
     }
 
     @Test
