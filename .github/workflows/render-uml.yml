@@ -24,9 +24,30 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y plantuml graphviz fonts-dejavu-core
 
-      - name: Render all PlantUML source files to PNG
+      - name: Inspect PlantUML sources
         run: |
-          plantuml -tpng -charset UTF-8 docs/uml/*.puml
+          echo "Repository: $GITHUB_WORKSPACE"
+          find docs/uml -maxdepth 1 -type f -printf '%f %s bytes\n' | sort
+          for file in docs/uml/*.puml; do
+            echo "---- $file"
+            sed -n '1,5p' "$file"
+            grep -n '@startuml\|@enduml' "$file" || true
+          done
+          plantuml -version
+
+      - name: Render PlantUML files individually
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(docs/uml/*.puml)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No .puml source files found under docs/uml"
+            exit 1
+          fi
+          for file in "${files[@]}"; do
+            echo "Rendering $file"
+            plantuml -charset UTF-8 -tpng "$file"
+          done
 
       - name: Commit updated PNG diagrams
         run: |
