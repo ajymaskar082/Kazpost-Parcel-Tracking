@@ -1,56 +1,65 @@
 @startuml
-title Қазпошта — мәселе және оны шешу сценарийі
+title Қазпошта — статус жаңартылмау проблемасын шешу сценарийі
 skinparam shadowing false
 
+actor "Жіберуші" as Sender
 actor "Пошта қызметкері" as Operator
 boundary "Консольдік мәзір" as Menu
 control "ParcelService" as Service
-control "Деректерді тексеру" as Validator
-control "TrackingNumberGenerator" as Generator
-participant "ParcelDao (JDBC)" as DAO
+participant "ParcelRepository / ParcelDao" as Repository
 database "SQLite деректер қоры" as DB
 
-note over Operator,Service
-МӘСЕЛЕ:
-Қолмен енгізілген деректерде қате болуы,
-трек-нөмірдің қайталануы және статус тарихының
-жүйесіз сақталуы мүмкін.
+note over Sender,DB
+ПРОБЛЕМА:
+Сұрыптау орталығында жүктеме артқанда
+сәлемдемені өңдеу және жөнелту уақытша кідіруі мүмкін.
+Статус жаңартылмаса, жіберуші ескі ақпаратты көреді.
 end note
 
-note over Service,DB
+Sender -> Menu : Трек-нөмірді енгізу
+Menu -> Service : findParcel(trackingNumber)
+Service -> Repository : findByTrackingNumber(number)
+Repository -> DB : SELECT parcel and latest tracking event
+DB --> Repository : Сақталған статус және соңғы уақыт
+Repository --> Service : Parcel + TrackingEvent
+Service --> Menu : Соңғы тіркелген статус
+Menu --> Sender : Статус пен жаңартылған уақытты көрсету
+
+note over Operator,DB
 ШЕШІМ:
-Мәліметтерді тексеру, бірегей трек-нөмір жасау,
-SQLite-қа транзакциямен сақтау және статус тарихын тіркеу.
+Жаңа сканерлеу/қозғалыс тіркелгенде
+қызметкер статус оқиғасын жүйеге енгізеді.
+Жүйе ағымдағы статус пен тарихты бірге сақтайды.
+Бұл жеткізуді физикалық жылдамдатпайды,
+бірақ бақылау ақпаратының жаңаруын жүйелейді.
 end note
 
-Operator -> Menu : Сәлемдемені тіркеуді таңдау
-Menu -> Operator : Жіберуші мен алушы деректерін сұрау
-Operator -> Menu : Мәліметтерді енгізу
-Menu -> Service : registerParcel(data)
-Service -> Validator : validate(data)
-Validator --> Service : Тексеру нәтижесі
-
-alt Мәліметтер қате немесе толық емес
-  Service --> Menu : ValidationError хабарламасы
-  Menu --> Operator : Мәліметті түзетуді сұрау
-else Мәліметтер дұрыс
-  Service -> Generator : generateUnique()
-  Generator --> Service : Бірегей трек-нөмір
-  Service -> DAO : save(parcel)
-  DAO -> DB : BEGIN TRANSACTION
-  DAO -> DB : INSERT INTO parcels
-  DAO -> DB : INSERT INTO tracking_events
-  DB --> DAO : Жазу нәтижесі
-  alt Сақтау сәтті
-    DAO -> DB : COMMIT
-    DAO --> Service : Сақталды
-    Service --> Menu : Трек-нөмірді қайтару
-    Menu --> Operator : Сәлемдеме сәтті тіркелді
-  else Деректер қорында қате
-    DAO -> DB : ROLLBACK
-    DAO --> Service : Сақтау қатесі
-    Service --> Menu : Қате хабарламасы
-    Menu --> Operator : Қайта әрекет ету туралы хабар
-  end
+Operator -> Menu : Жаңа статус пен оқиға сипаттамасын енгізу
+Menu -> Service : updateStatus(number, newStatus, description)
+Service -> Service : Статус ауысуын тексеру
+Service -> Repository : updateParcelAndSaveEvent(parcel, event)
+Repository -> DB : BEGIN TRANSACTION
+Repository -> DB : UPDATE parcels SET status = newStatus
+Repository -> DB : INSERT INTO tracking_events
+DB --> Repository : Сақтау нәтижесі
+alt Сақтау сәтті
+  Repository -> DB : COMMIT
+  Repository --> Service : Жаңарту сәтті
+  Service --> Menu : Статус жаңартылды
+  Menu --> Operator : Сақтау расталды
+else Сақтау қатесі
+  Repository -> DB : ROLLBACK
+  Repository --> Service : Қате
+  Service --> Menu : Қате туралы хабарлама
+  Menu --> Operator : Қайта әрекет жасау
 end
+
+Sender -> Menu : Трек-нөмірді қайта іздеу
+Menu -> Service : findParcel(trackingNumber)
+Service -> Repository : findByTrackingNumber(number)
+Repository -> DB : SELECT parcel and tracking history
+DB --> Repository : Соңғы статус және оқиғалар
+Repository --> Service : Жаңартылған мәлімет
+Service --> Menu : Жаңартылған статус пен тарих
+Menu --> Sender : Жеткізу барысының соңғы ақпараты
 @enduml
