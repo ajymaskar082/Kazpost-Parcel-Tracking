@@ -3,3 +3,8 @@
 *.class
 *.log
 .DS_Store
+
+# Local database and generated reports
+/data/*.db
+/data/*.db-journal
+/data/*.csv
