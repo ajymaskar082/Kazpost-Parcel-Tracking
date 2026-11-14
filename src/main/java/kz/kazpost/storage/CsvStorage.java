@@ -1,7 +1,6 @@
 package kz.kazpost.storage;
 
 import kz.kazpost.model.Parcel;
-import kz.kazpost.model.TrackingEvent;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -67,7 +66,7 @@ public class CsvStorage {
 
     private String escape(String value) {
         String safe = value == null ? "" : value;
-        return """ + safe.replace(""", """") + """;
+        return "\"" + safe.replace("\"", "\"\"") + "\"";
     }
 
     private String[] parseLine(String line) {
