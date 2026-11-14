@@ -10,7 +10,7 @@ import java.util.function.Predicate;
  */
 public class TrackingNumberGenerator {
     private static final int MAX_ATTEMPTS = 100;
-    private static final int UPPER_BOUND = 1_000_000_000;
+    private static final int UPPER_BOUND = Integer.MAX_VALUE;
     private final SecureRandom random;
 
     public TrackingNumberGenerator() {
