@@ -69,6 +69,16 @@ public class ParcelService {
         return repository.findAll();
     }
 
+    /**
+     * Demonstrates the Stream API map operation for report preparation.
+     */
+    public List<String> getParcelTrackingNumbers() {
+        return repository.findAll().stream()
+                .map(Parcel::getTrackingNumber)
+                .sorted()
+                .toList();
+    }
+
     public void updateStatus(String trackingNumber, DeliveryStatus status, String description)
             throws TrackingNumberNotFoundException {
         Parcel parcel = findParcel(trackingNumber);
