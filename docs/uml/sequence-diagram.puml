@@ -1,0 +1,56 @@
+@startuml
+title Қазпошта — мәселе және оны шешу сценарийі
+skinparam shadowing false
+
+actor "Пошта қызметкері" as Operator
+boundary "Консольдік мәзір" as Menu
+control "ParcelService" as Service
+control "Деректерді тексеру" as Validator
+control "TrackingNumberGenerator" as Generator
+participant "ParcelDao (JDBC)" as DAO
+database "SQLite деректер қоры" as DB
+
+note over Operator,Service
+МӘСЕЛЕ:
+Қолмен енгізілген деректерде қате болуы,
+трек-нөмірдің қайталануы және статус тарихының
+жүйесіз сақталуы мүмкін.
+end note
+
+note over Service,DB
+ШЕШІМ:
+Мәліметтерді тексеру, бірегей трек-нөмір жасау,
+SQLite-қа транзакциямен сақтау және статус тарихын тіркеу.
+end note
+
+Operator -> Menu : Сәлемдемені тіркеуді таңдау
+Menu -> Operator : Жіберуші мен алушы деректерін сұрау
+Operator -> Menu : Мәліметтерді енгізу
+Menu -> Service : registerParcel(data)
+Service -> Validator : validate(data)
+Validator --> Service : Тексеру нәтижесі
+
+alt Мәліметтер қате немесе толық емес
+  Service --> Menu : ValidationError хабарламасы
+  Menu --> Operator : Мәліметті түзетуді сұрау
+else Мәліметтер дұрыс
+  Service -> Generator : generateUnique()
+  Generator --> Service : Бірегей трек-нөмір
+  Service -> DAO : save(parcel)
+  DAO -> DB : BEGIN TRANSACTION
+  DAO -> DB : INSERT INTO parcels
+  DAO -> DB : INSERT INTO tracking_events
+  DB --> DAO : Жазу нәтижесі
+  alt Сақтау сәтті
+    DAO -> DB : COMMIT
+    DAO --> Service : Сақталды
+    Service --> Menu : Трек-нөмірді қайтару
+    Menu --> Operator : Сәлемдеме сәтті тіркелді
+  else Деректер қорында қате
+    DAO -> DB : ROLLBACK
+    DAO --> Service : Сақтау қатесі
+    Service --> Menu : Қате хабарламасы
+    Menu --> Operator : Қайта әрекет ету туралы хабар
+  end
+end
+@enduml
