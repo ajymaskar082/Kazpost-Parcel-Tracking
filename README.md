@@ -50,7 +50,7 @@ Kazpost-Parcel-Tracking/
     │   ├── model/
     │   ├── database/
     │   ├── repository/
-    │   ├── service/
+    │   ├── service/\n    │   │   └── AsyncReportService.java
     │   ├── strategy/
     │   ├── factory/
     │   ├── storage/
@@ -117,7 +117,7 @@ mvn exec:java
 mvn test
 ```
 
-Тесттер модельдердің валидациясын, статус ауысуын, трек-нөмір генерациясын, SQLite арқылы тіркеу/іздеу/жаңартуды және CSV экспортын тексереді.
+Тесттер модельдердің валидациясын, статус ауысуын, трек-нөмір генерациясын, SQLite арқылы тіркеу/іздеу/жаңартуды, CSV экспортын, асинхронды экспорт пен фондық ағынды тексереді.
 
 GitHub Actions-тағы **Java 17 Maven CI** workflow әр push және Pull Request кезінде `mvn clean verify` орындайды.
 
