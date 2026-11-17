@@ -7,6 +7,7 @@ import kz.kazpost.model.PostOffice;
 import kz.kazpost.model.Recipient;
 import kz.kazpost.model.Sender;
 import kz.kazpost.service.ParcelService;
+import kz.kazpost.service.AsyncReportService;
 import kz.kazpost.strategy.ExpressDeliveryStrategy;
 import kz.kazpost.strategy.StandardDeliveryStrategy;
 
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletionException;
 import java.util.Scanner;
 
 /**
@@ -21,10 +23,12 @@ import java.util.Scanner;
  */
 public class ConsoleMenu {
     private final ParcelService parcelService;
+    private final AsyncReportService asyncReportService;
     private final Scanner scanner;
 
-    public ConsoleMenu(ParcelService parcelService, Scanner scanner) {
+    public ConsoleMenu(ParcelService parcelService, AsyncReportService asyncReportService, Scanner scanner) {
         this.parcelService = parcelService;
+        this.asyncReportService = asyncReportService;
         this.scanner = scanner;
     }
 
@@ -45,8 +49,9 @@ public class ConsoleMenu {
                     case "5" -> showStatistics();
                     case "6" -> exportCsv();
                     case "7" -> chooseDeliveryStrategy();
+                    case "8" -> exportCsvAsync();
                     case "0" -> running = false;
-                    default -> System.out.println("Мәзірден 0–7 аралығындағы бөлімді таңдаңыз.");
+                    default -> System.out.println("Мәзірден 0–8 аралығындағы бөлімді таңдаңыз.");
                 }
             } catch (TrackingNumberNotFoundException exception) {
                 System.out.println("Қате: " + exception.getMessage());
@@ -73,6 +78,7 @@ public class ConsoleMenu {
                 5. Статистика
                 6. CSV есебін экспорттау
                 7. Жеткізу түрін таңдау
+                8. CSV есебін фондық ағынмен экспорттау
                 0. Шығу
                 -------------------------------
                 Таңдау:
@@ -145,6 +151,29 @@ public class ConsoleMenu {
         Path target = path.isBlank() ? Path.of("data", "parcels-report.csv") : Path.of(path);
         parcelService.exportReport(target);
         System.out.println("CSV есебі сақталды: " + target.toAbsolutePath());
+    }
+
+    /**
+     * Starts file export on a worker thread; the menu remains responsive.
+     */
+    private void exportCsvAsync() {
+        String path = readOptional("CSV файлының жолы (әдепкі: data/parcels-async-report.csv): ");
+        Path target = path.isBlank()
+                ? Path.of("data", "parcels-async-report.csv")
+                : Path.of(path);
+
+        asyncReportService.exportAsync(parcelService.getAllParcels(), target)
+                .whenComplete((savedPath, error) -> {
+                    if (error != null) {
+                        Throwable cause = error instanceof CompletionException && error.getCause() != null
+                                ? error.getCause() : error;
+                        System.err.println("Фондық CSV экспорт қатесі: " + cause.getMessage());
+                    } else {
+                        System.out.println("Фондық CSV есеп сақталды: " + savedPath);
+                    }
+                });
+
+        System.out.println("CSV экспорты фондық ағынға жіберілді. Мәзірді қолдануды жалғастыра аласыз.");
     }
 
     private void chooseDeliveryStrategy() {
