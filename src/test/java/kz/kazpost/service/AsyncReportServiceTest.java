@@ -77,8 +77,8 @@ class AsyncReportServiceTest {
                     () -> service.exportAsync(List.of(sampleParcel()), tempDir.resolve("failure.csv"))
                             .get(5, TimeUnit.SECONDS));
 
-            assertTrue(exception.getCause() instanceof java.util.concurrent.CompletionException);
-            assertTrue(exception.getCause().getCause() instanceof IOException);
+            assertTrue(exception.getCause() instanceof IOException);
+            assertEquals("Test file error", exception.getCause().getMessage());
         }
     }
 }
