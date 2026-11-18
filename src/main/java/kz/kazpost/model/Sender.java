@@ -5,7 +5,8 @@ public final class Sender extends Person {
         super(fullName, phone, address);
     }
 
-    public void sendParcel() {
-        // Domain action: parcel registration is handled by ParcelService.
+    @Override
+    public String getRoleLabel() {
+        return "Жіберуші";
     }
 }
