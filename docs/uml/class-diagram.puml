@@ -1,120 +1,174 @@
 @startuml
-title Қазпошта — сәлемдемелерді жеткізу және трекинг жүйесінің Class Diagram-ы
+title Қазпошта — Java 17 консольдік жүйесінің Class Diagram-ы
 left to right direction
 skinparam classAttributeIconSize 0
 skinparam linetype ortho
+skinparam packageStyle rectangle
 
-abstract class Person {
-  - id: int
-  - fullName: String
-  - phone: String
-  - address: String
-  + getFullName(): String
-  + getPhone(): String
-  + getAddress(): String
+package "model" {
+  abstract class Person {
+    - fullName: String
+    - phone: String
+    - address: String
+    + getRoleLabel(): String
+    + getFullName(): String
+    + getPhone(): String
+    + getAddress(): String
+    + equals(other: Object): boolean
+    + hashCode(): int
+  }
+
+  class Sender {
+    + getRoleLabel(): String
+  }
+
+  class Recipient {
+    + getRoleLabel(): String
+  }
+
+  class PostOffice {
+    - officeCode: String
+    - address: String
+    - city: String
+    + getOfficeInfo(): String
+  }
+
+  class Parcel {
+    - trackingNumber: String
+    - sender: Sender
+    - recipient: Recipient
+    - postOffice: PostOffice
+    - weight: double
+    - createdAt: LocalDateTime
+    - status: DeliveryStatus
+    - trackingHistory: List<TrackingEvent>
+    + updateStatus(newStatus: DeliveryStatus, description: String): void
+    + getTrackingNumber(): String
+    + getStatus(): DeliveryStatus
+    + getTrackingHistory(): List<TrackingEvent>
+  }
+
+  class TrackingEvent {
+    - eventId: long
+    - status: DeliveryStatus
+    - eventDate: LocalDateTime
+    - description: String
+    + create(status: DeliveryStatus, description: String): TrackingEvent
+    + getEventInfo(): String
+  }
+
+  enum DeliveryStatus {
+    REGISTERED
+    ACCEPTED
+    IN_TRANSIT
+    ARRIVED_AT_OFFICE
+    DELIVERED
+    LOST
+    --
+    + canTransitionTo(next: DeliveryStatus): boolean
+    + activeStatuses(): Set<DeliveryStatus>
+    + getKazakhLabel(): String
+  }
 }
 
-class Sender {
-  + sendParcel(): void
+package "service and patterns" {
+  class ParcelService {
+    - repository: ParcelDao
+    - parcelFactory: ParcelFactory
+    - numberGenerator: TrackingNumberGenerator
+    - csvStorage: CsvStorage
+    - knownTrackingNumbers: Set<String>
+    - deliveryStrategy: DeliveryStrategy
+    + registerParcel(sender: Sender, recipient: Recipient, office: PostOffice, weight: double): Parcel
+    + findParcel(trackingNumber: String): Parcel
+    + getAllParcels(): List<Parcel>
+    + getParcelTrackingNumbers(): List<String>
+    + updateStatus(trackingNumber: String, status: DeliveryStatus, description: String): void
+    + getStatistics(): Map<DeliveryStatus, Long>
+    + groupParcelsByStatus(): Map<DeliveryStatus, List<Parcel>>
+    + searchByRecipientName(name: String): List<Parcel>
+    + calculateDeliveryCost(parcel: Parcel): double
+    + setDeliveryStrategy(strategy: DeliveryStrategy): void
+    + exportReport(target: Path): void
+  }
+
+  interface DeliveryStrategy {
+    + calculateDeliveryCost(parcel: Parcel): double
+    + getName(): String
+  }
+
+  class StandardDeliveryStrategy {
+    + calculateDeliveryCost(parcel: Parcel): double
+    + getName(): String
+  }
+
+  class ExpressDeliveryStrategy {
+    + calculateDeliveryCost(parcel: Parcel): double
+    + getName(): String
+  }
+
+  class ParcelFactory {
+    + create(trackingNumber: String, sender: Sender, recipient: Recipient, office: PostOffice, weight: double): Parcel
+  }
+
+  class TrackingNumberGenerator {
+    - random: SecureRandom
+    + generate(): String
+    + generateUnique(alreadyExists: Predicate<String>): String
+  }
+
+  abstract class "Repository<T>" as Repository {
+    + save(entity: T): void
+    + findById(id: String): Optional<T>
+    + findAll(): List<T>
+  }
 }
 
-class Recipient {
-  + receiveParcel(): void
+package "persistence" {
+  class ParcelDao {
+    - database: DatabaseConnection
+    + save(parcel: Parcel): void
+    + existsByTrackingNumber(number: String): boolean
+    + findById(number: String): Optional<Parcel>
+    + findAll(): List<Parcel>
+    + updateStatus(parcel: Parcel): void
+  }
+
+  class DatabaseConnection {
+    - jdbcUrl: String
+    + getConnection(): Connection
+    - initializeSchema(): void
+  }
+
+  class CsvStorage {
+    + exportToCsv(parcels: List<Parcel>, target: Path): void
+    + readCsv(source: Path): List<String[]>
+  }
+
+  class AsyncReportService {
+    - csvStorage: CsvStorage
+    - executor: ExecutorService
+    + exportAsync(parcels: List<Parcel>, target: Path): CompletableFuture<Path>
+    + close(): void
+  }
 }
 
-class PostOffice {
-  - officeId: int
-  - officeCode: String
-  - address: String
-  - city: String
-  + getOfficeInfo(): String
+package "console and entry point" {
+  class Main {
+    + main(args: String[]): void
+  }
+
+  class ConsoleMenu {
+    - parcelService: ParcelService
+    - asyncReportService: AsyncReportService
+    - scanner: Scanner
+    + run(): void
+  }
 }
 
-class Parcel {
-  - trackingNumber: String
-  - weight: double
-  - createdAt: LocalDateTime
-  - status: DeliveryStatus
-  - sender: Sender
-  - recipient: Recipient
-  - postOffice: PostOffice
-  - trackingHistory: List<TrackingEvent>
-  + getTrackingNumber(): String
-  + getStatus(): DeliveryStatus
-  + updateStatus(status: DeliveryStatus): void
-  + addTrackingEvent(event: TrackingEvent): void
-  + getTrackingHistory(): List<TrackingEvent>
-}
-
-class TrackingEvent {
-  - eventId: int
-  - status: DeliveryStatus
-  - eventDate: LocalDateTime
-  - description: String
-  + getEventInfo(): String
-}
-
-enum DeliveryStatus {
-  REGISTERED
-  ACCEPTED
-  IN_TRANSIT
-  ARRIVED_AT_OFFICE
-  DELIVERED
-  LOST
-}
-
-class ParcelService {
-  - parcels: Map<String, Parcel>
-  - registeredTrackingNumbers: Set<String>
-  - repository: Repository<Parcel>
-  - strategy: DeliveryStrategy
-  + registerParcel(parcel: Parcel): void
-  + findParcel(number: String): Parcel
-  + updateStatus(number: String, status: DeliveryStatus): void
-  + getAllParcels(): List<Parcel>
-  + getStatistics(): Map<DeliveryStatus, Long>
-}
-
-interface DeliveryStrategy {
-  + calculateDeliveryCost(parcel: Parcel): double
-}
-
-class StandardDeliveryStrategy {
-  + calculateDeliveryCost(parcel: Parcel): double
-}
-
-class ExpressDeliveryStrategy {
-  + calculateDeliveryCost(parcel: Parcel): double
-}
-
-abstract class Repository<T> {
-  + save(entity: T): void
-  + findById(id: String): Optional<T>
-  + findAll(): List<T>
-}
-
-class ParcelDao {
-  - connection: Connection
-  + save(parcel: Parcel): void
-  + findById(id: String): Optional<Parcel>
-  + findAll(): List<Parcel>
-  + updateStatus(parcel: Parcel): void
-}
-
-class DatabaseConnection {
-  + getConnection(): Connection
-}
-
-class TrackingNumberGenerator {
-  + generate(): String
-}
-
-class CsvStorage {
-  + exportToCsv(parcels: List<Parcel>): void
-}
-
-class TrackingNumberNotFoundException {
-  + TrackingNumberNotFoundException(message: String)
+package "exceptions" {
+  class TrackingNumberNotFoundException
+  class DataAccessException
 }
 
 Person <|-- Sender
@@ -123,16 +177,29 @@ DeliveryStrategy <|.. StandardDeliveryStrategy
 DeliveryStrategy <|.. ExpressDeliveryStrategy
 Repository <|-- ParcelDao
 
-Sender "1" -- "0..*" Parcel : жібереді
-Recipient "1" -- "0..*" Parcel : қабылдайды
-PostOffice "1" -- "0..*" Parcel : өңдейді
-Parcel "1" *-- "0..*" TrackingEvent : статус тарихы
+Sender "1" -- "0..*" Parcel : жіберуші
+Recipient "1" -- "0..*" Parcel : алушы
+PostOffice "1" -- "0..*" Parcel : бөлімше
+Parcel "1" *-- "1..*" TrackingEvent : статус тарихы
 Parcel --> DeliveryStatus : ағымдағы статус
 
-ParcelService --> Repository : қолданады
-ParcelService --> TrackingNumberGenerator
-ParcelService --> DeliveryStrategy
-ParcelService --> CsvStorage
-ParcelDao --> DatabaseConnection
+ParcelService --> ParcelDao : сақтау/іздеу
+ParcelService --> ParcelFactory : объект жасау
+ParcelService --> TrackingNumberGenerator : трек-нөмір
+ParcelService --> DeliveryStrategy : баға есептеу
+ParcelService --> CsvStorage : CSV есеп
+ParcelDao --> DatabaseConnection : JDBC
+AsyncReportService --> CsvStorage : фондық экспорт
+ConsoleMenu --> ParcelService : негізгі әрекеттер
+ConsoleMenu --> AsyncReportService : асинхронды экспорт
+Main --> DatabaseConnection
+Main --> ConsoleMenu
+Main --> AsyncReportService
 ParcelService ..> TrackingNumberNotFoundException
+ParcelDao ..> DataAccessException
+
+note bottom of ParcelService
+Collections: List, Set, Map
+Stream API: filter, map, groupingBy, counting
+end note
 @enduml

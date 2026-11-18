@@ -2,18 +2,22 @@
 
 ## 1. Жоба туралы
 
-Бұл жоба Қазпошта сәлемдемелерін тіркеу, жеткізу және олардың қозғалысын бақылау процесін модельдейтін оқу жобасы. Жүйе сәлемдемені тіркеу, бірегей трек-нөмір беру, статусын жаңарту және статус тарихын сақтау функцияларын жобалайды.
+Бұл — Қазпошта сәлемдемелерін тіркеу, жеткізу статустарын жаңарту және трек-нөмір арқылы бақылау процесін модельдейтін оқу жобасы.
 
-**Жоба тақырыбы:** Сәлемдеме жеткізу және трекинг  
-**Ұйым:** Қазпошта  
 **Тапсырма нұсқасы:** 16  
-**Жоспарланған технология:** Java 17+
+**Тілі:** Java 17  
+**Қосымша:** консольдік мәзір  
+**Деректер қоры:** SQLite + JDBC  
+**Құрастыру:** Maven  
+**Тестілеу:** JUnit 5
+
+Бұл жоба Қазпоштаның ресми ішкі жүйесі емес және нақты жөнелтілімдерді қадағаламайды. Ол оқу мақсатындағы дербес модель.
 
 ## 2. Проблема және жобаның мақсаты
 
-Сәлемдеме туралы мәліметтер мен статус тарихын жүйелі түрде сақтау және жеткізу барысын бақылау маңызды. Жобаның мақсаты — сәлемдемелерді тіркеу, трек-нөмірмен іздеу, статусын басқару және өзгерістер тарихын сақтау процесін бір оқу жүйесінде модельдеу.
+Сұрыптау және тасымалдау кезеңдеріндегі уақытша кідіріс кезінде сәлемдеме статусы біраз уақыт өзгермеуі мүмкін. Пайдаланушы соңғы тіркелген ақпаратты көріп, жөнелтілімнің қазіргі кезеңін түсінуде қиындыққа тап болады.
 
-Бұл жоба Қазпоштаның ішкі жүйесі емес және нақты жөнелтілімдермен байланыспайды.
+Жобаның мақсаты — сәлемдемелерді бірегей трек-нөмірмен тіркеу, статус өзгерістерінің тарихын сақтау және пайдаланушыға соңғы сақталған ақпаратты көрсетуге арналған консольдік жүйе әзірлеу.
 
 ## 3. Репозиторий құрылымы
 
@@ -21,55 +25,109 @@
 Kazpost-Parcel-Tracking/
 ├── README.md
 ├── .gitignore
-└── docs/
-    ├── research.md
-    └── uml/
-        ├── use-case.png
-        ├── use-case.puml
-        ├── class-diagram.png
-        ├── class-diagram.puml
-        ├── sequence-diagram.png
-        ├── sequence-diagram.puml
-        ├── activity-diagram.png
-        ├── activity-diagram.puml
-        ├── state-diagram.png
-        ├── state-diagram.puml
-        ├── er-diagram.png
-        ├── er-diagram.puml
-        └── UML-Documentation.md
+├── pom.xml
+├── data/
+│   └── .gitkeep
+├── docs/
+│   ├── research.md
+│   └── uml/
+│       ├── UML-Documentation.md
+│       ├── use-case.png
+│       ├── use-case.puml
+│       ├── class-diagram.png
+│       ├── class-diagram.puml
+│       ├── sequence-diagram.png
+│       ├── sequence-diagram.puml
+│       ├── activity-diagram.png
+│       ├── activity-diagram.puml
+│       ├── state-diagram.png
+│       ├── state-diagram.puml
+│       ├── er-diagram.png
+│       └── er-diagram.puml
+└── src/
+    ├── main/java/kz/kazpost/
+    │   ├── Main.java
+    │   ├── model/
+    │   ├── database/
+    │   ├── repository/
+    │   ├── service/
+    │   │   └── AsyncReportService.java
+    │   ├── strategy/
+    │   ├── factory/
+    │   ├── storage/
+    │   ├── util/
+    │   ├── exception/
+    │   └── ui/
+    └── test/java/kz/kazpost/
+        ├── model/
+        ├── repository/
+        ├── service/
+        ├── storage/
+        ├── strategy/
+        └── util/
 ```
 
-## 4. Зерттеу құжаты
+## 4. Негізгі мүмкіндіктер
 
-Ұйым туралы зерттеу, анықталған проблема, ұсынылатын шешім, мақсат, міндеттер, функционалдық талаптар және ұқсас жүйелермен салыстыру: [docs/research.md](docs/research.md).
+1. Сәлемдемені жіберуші, алушы, пошта бөлімшесі және салмақ мәліметтерімен тіркеу.
+2. Бірегей KZ трек-нөмірін автоматты түрде жасау.
+3. Трек-нөмір арқылы сәлемдемені іздеу.
+4. Сәлемдеменің статусын рұқсат етілген ретпен өзгерту.
+5. Статус өзгерістерінің тарихын уақыт белгісімен сақтау.
+6. Барлық сәлемдемелерді және статус бойынша статистиканы көру.
+7. Стандартты және жедел жеткізу құнын Strategy үлгісімен есептеу. Құн формулалары — оқу мақсатындағы шартты мәндер, ресми Қазпошта тарифтері емес.
+8. Есепті UTF-8 CSV файлына экспорттау.
+9. CSV есебін фондық ағынмен экспорттау: экспорт жүріп жатқанда консоль мәзірін қолдануды жалғастыруға болады.
+10. Сәлемдеме мен статус тарихын SQLite деректер қорында бір транзакциямен сақтау.
 
-## 5. UML және деректер қоры диаграммалары
+## 5. Қолданылған бағдарламалау талаптары
 
-Барлық диаграммалардың PNG суреттері мен PlantUML бастапқы файлдары `docs/uml/` ішінде сақталады.
+- **OOP:** инкапсуляция, мұрагерлік, полиморфизм және абстракция.
+- **Abstract class:** `Person`.
+- **Interface:** `DeliveryStrategy`.
+- **Generics:** `Repository<T>` абстрактілі класы.
+- **Collections:** `List`, `Set`, `Map`; іске асыруда `ArrayList`, `HashSet`, `HashMap`.
+- **Stream API:** `filter`, `map`, `groupingBy`, `counting`.
+- **Enum:** `DeliveryStatus`.
+- **Custom exception:** `TrackingNumberNotFoundException`, `DataAccessException`.
+- **DAO:** `ParcelDao`.
+- **Database:** SQLite + JDBC, кестелер арасында PK/FK байланыстары және транзакциялар.
+- **CSV:** есеп экспорттау және CSV жолдарын оқу.
+- **Көп ағындылық:** `ExecutorService`, `CompletableFuture` және фондық CSV экспорт.
+- **Tests:** JUnit 5.
 
-| Диаграмма | Бастапқы файл | PNG суреті |
-|---|---|---|
-| Use Case | [use-case.puml](docs/uml/use-case.puml) | [use-case.png](docs/uml/use-case.png) |
-| Class Diagram | [class-diagram.puml](docs/uml/class-diagram.puml) | [class-diagram.png](docs/uml/class-diagram.png) |
-| Sequence Diagram | [sequence-diagram.puml](docs/uml/sequence-diagram.puml) | [sequence-diagram.png](docs/uml/sequence-diagram.png) |
-| Activity Diagram | [activity-diagram.puml](docs/uml/activity-diagram.puml) | [activity-diagram.png](docs/uml/activity-diagram.png) |
-| State Diagram | [state-diagram.puml](docs/uml/state-diagram.puml) | [state-diagram.png](docs/uml/state-diagram.png) |
-| ER Diagram | [er-diagram.puml](docs/uml/er-diagram.puml) | [er-diagram.png](docs/uml/er-diagram.png) |
+## 6. Бағдарламаны іске қосу
 
-Диаграммалардың түсіндірмесі: [UML-Documentation.md](docs/uml/UML-Documentation.md).
+Компьютерде JDK 17 және Maven орнатылған болуы керек.
 
-## 6. Жобалауда ескерілетін негізгі кластар
+Терминалда репозиторийдің негізгі бумасына өтіп, құрастыру және барлық тесттерді орындау:
 
-- `Parcel` — сәлемдеме туралы мәліметтер.
-- `Sender` — жіберуші.
-- `Recipient` — алушы.
-- `PostOffice` — пошта бөлімшесі.
-- `TrackingEvent` — статус өзгерісінің тарихы.
-- `DeliveryStatus` — жеткізу статустарының `enum` түрі.
-- `ParcelService` — сәлемдемелерді басқару логикасы.
+```bash
+mvn clean verify
+```
 
-Қосымша жобалық элементтер Class Diagram-да көрсетілген: абстрактілі `Person`, `DeliveryStrategy` интерфейсі, Generic абстрактілі `Repository<T>` класы, `List`, `Set`, `Map`, DAO және сақтау компоненттері.
+Консольдік бағдарламаны іске қосу:
 
-## 7. Қазіргі кезеңнің шекарасы
+```bash
+mvn exec:java
+```
 
-Осы репозиторий құрылымы Research, UML және деректер қоры схемасын жобалау кезеңіне арналған. Java іске асыру, Maven конфигурациясы, CSV/JSON деректері, JUnit тесттері және командалық Branch/Pull Request процесі келесі кезеңдерде қосылады.
+Бағдарлама алғашқы рет іске қосылғанда `data/kazpost.db` SQLite файлын және қажетті кестелерді автоматты түрде жасайды. CSV есеп әдепкіде `data/parcels-report.csv` жолына экспортталады. Асинхронды экспорт үшін мәзірдегі 8-нұсқа қолданылады.
+
+## 7. Тестілеу
+
+Барлық JUnit тесттерін іске қосу:
+
+```bash
+mvn test
+```
+
+Тесттер модельдердің валидациясын, статус ауысуын, трек-нөмір генерациясын, SQLite арқылы тіркеу/іздеу/жаңартуды, CSV экспортын, жеткізу стратегияларын және асинхронды экспорттың фондық ағынмен орындалуын тексереді.
+
+GitHub Actions-тағы **Java 17 Maven CI** workflow әр push және Pull Request кезінде `mvn clean verify` орындайды.
+
+## 8. Құжаттама
+
+- Зерттеу: [docs/research.md](docs/research.md)
+- UML түсіндірмесі: [docs/uml/UML-Documentation.md](docs/uml/UML-Documentation.md)
+- Барлық PNG және PlantUML диаграммалары: [docs/uml/](docs/uml/)

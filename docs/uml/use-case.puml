@@ -1,54 +1,52 @@
 @startuml
 left to right direction
-title Қазпошта сәлемдемелерін жеткізу және трекинг жүйесі
+title Қазпошта — іске асырылған консольдік жүйенің Use Case диаграммасы
 
 actor "Жіберуші" as Sender
 actor "Алушы" as Recipient
 actor "Пошта қызметкері" as Operator
 actor "Курьер" as Courier
 actor "Әкімші" as Admin
-actor "Хабарландыру қызметі" as Notification
 
 rectangle "Қазпошта сәлемдемелерін жеткізу және трекинг жүйесі" {
   usecase "Сәлемдемені тіркеу" as UC1
-  usecase "Трек-нөмір беру" as UC2
-  usecase "Сәлемдемені іздеу" as UC3
-  usecase "Статусты көру" as UC4
-  usecase "Статус тарихын көру" as UC5
-  usecase "Статусты жаңарту" as UC6
-  usecase "Сәлемдемені тасымалдау" as UC7
-  usecase "Сәлемдемені жеткізу" as UC8
-  usecase "Хабарлама жіберу" as UC9
-  usecase "Есеп қалыптастыру" as UC10
-  usecase "CSV экспорттау" as UC11
-  usecase "Пайдаланушыларды басқару" as UC12
+  usecase "Бірегей трек-нөмір генерациялау" as UC2
+  usecase "Трек-нөмір арқылы іздеу\nжәне статус тарихын көру" as UC3
+  usecase "Барлық сәлемдемелерді көру" as UC4
+  usecase "Сәлемдеме статусын жаңарту" as UC5
+  usecase "Статус оқиғасын тарихқа қосу" as UC6
+  usecase "Статистика көру" as UC7
+  usecase "Жеткізу стратегиясын таңдау" as UC8
+  usecase "CSV есебін экспорттау" as UC9
+  usecase "CSV есебін фондық ағынмен экспорттау" as UC10
 }
 
-Sender --> UC1
 Sender --> UC3
-Sender --> UC4
-Sender --> UC5
-
 Recipient --> UC3
-Recipient --> UC4
-Recipient --> UC5
 
 Operator --> UC1
-Operator --> UC6
+Operator --> UC3
+Operator --> UC4
+Operator --> UC5
+Operator --> UC7
+Operator --> UC8
+Operator --> UC9
 Operator --> UC10
-Operator --> UC11
 
-Courier --> UC7
-Courier --> UC8
-Courier --> UC6
+Courier --> UC5
 
+Admin --> UC4
+Admin --> UC7
+Admin --> UC9
 Admin --> UC10
-Admin --> UC11
-Admin --> UC12
-
-Notification --> UC9
 
 UC1 ..> UC2 : <<include>>
-UC6 ..> UC9 : <<include>>
-UC10 ..> UC11 : <<include>>
+UC5 ..> UC6 : <<include>>
+
+note bottom
+Бұл — оқу жобасының бизнес-рөлдері.
+Қолданыстағы бағдарламада рөлдер бойынша бөлек
+кіру/рұқсат жүйесі жоқ: барлық операция бірыңғай
+консоль мәзірі арқылы орындалады.
+end note
 @enduml
