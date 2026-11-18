@@ -7,7 +7,7 @@ entity "senders" as senders {
   * sender_id : INTEGER <<PK>>
   --
   full_name : TEXT
-  phone : TEXT
+  phone : TEXT <<UNIQUE>>
   address : TEXT
 }
 
@@ -22,7 +22,7 @@ entity "recipients" as recipients {
 entity "post_offices" as offices {
   * office_id : INTEGER <<PK>>
   --
-  office_code : TEXT
+  office_code : TEXT <<UNIQUE>>
   address : TEXT
   city : TEXT
 }
