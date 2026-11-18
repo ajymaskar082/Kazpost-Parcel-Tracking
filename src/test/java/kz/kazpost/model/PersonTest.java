@@ -2,7 +2,7 @@ package kz.kazpost.model;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class PersonTest {
     @Test
@@ -21,5 +21,14 @@ class PersonTest {
         assertEquals("Айжан", sender.getFullName());
         assertEquals("+77010000001", sender.getPhone());
         assertEquals("Алматы", sender.getAddress());
+    }
+
+    @Test
+    void personsWithTheSamePhoneAreEqual() {
+        Person first = new Sender("Айжан", "+77010000001", "Алматы");
+        Person second = new Recipient("Басқа адам", "+77010000001", "Астана");
+
+        assertEquals(first, second);
+        assertEquals(first.hashCode(), second.hashCode());
     }
 }
