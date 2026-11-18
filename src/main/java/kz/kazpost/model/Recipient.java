@@ -5,7 +5,8 @@ public final class Recipient extends Person {
         super(fullName, phone, address);
     }
 
-    public void receiveParcel() {
-        // Domain action: delivery completion is handled by ParcelService.
+    @Override
+    public String getRoleLabel() {
+        return "Алушы";
     }
 }
