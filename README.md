@@ -103,7 +103,22 @@ mvn exec:java
 
 ## 7. JUnit тесттері
 
-`mvn test` немесе `mvn clean verify` командалары JUnit 5 тесттерін орындайды. Тесттер:
+Жобаға 9 тест класы және **34 JUnit 5 тест** енгізілген. Әр тест тобы кемінде 3 тесттен тұрады. `mvn test` немесе `mvn clean verify` командалары тесттерді орындайды.
+
+| Тест класы | Тест саны |
+|---|---:|
+| DeliveryStatusTest | 5 |
+| ParcelTest | 5 |
+| PersonTest | 3 |
+| ParcelDaoTest | 3 |
+| ParcelServiceIntegrationTest | 6 |
+| AsyncReportServiceTest | 3 |
+| CsvStorageTest | 3 |
+| DeliveryStrategyTest | 3 |
+| TrackingNumberGeneratorTest | 3 |
+| **Барлығы** | **34** |
+
+Тесттер:
 - модельдердің валидациясын және статус ауысуын;
 - Person мұрагерлігі мен полиморфизмін;
 - SQLite DAO сақтау/іздеу/жаңартуын;
