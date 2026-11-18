@@ -2,14 +2,16 @@ name: Render UML diagrams
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - feature/**
     paths:
       - 'docs/uml/*.puml'
       - '.github/workflows/render-uml.yml'
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: render-uml-${{ github.ref }}
@@ -17,7 +19,6 @@ concurrency:
 
 jobs:
   render-uml:
-    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -28,23 +29,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y plantuml graphviz fonts-dejavu-core
 
-      - name: Inspect PlantUML sources
-        run: |
-          echo "Repository: $GITHUB_WORKSPACE"
-          find docs/uml -maxdepth 1 -type f -printf '%f %s bytes\n' | sort
-          for file in docs/uml/*.puml; do
-            echo "---- $file"
-            sed -n '1,5p' "$file"
-            grep -n '@startuml\|@enduml' "$file" || true
-          done
-
-      - name: Render PlantUML files individually
+      - name: Render PlantUML files
         run: |
           set -euo pipefail
           shopt -s nullglob
           files=(docs/uml/*.puml)
           if [ ${#files[@]} -eq 0 ]; then
-            echo "No .puml source files found under docs/uml"
+            echo "No .puml files found"
             exit 1
           fi
           for file in "${files[@]}"; do
@@ -52,15 +43,10 @@ jobs:
             plantuml -charset UTF-8 -tpng "$file"
           done
 
-      - name: Commit updated PNG diagrams
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/uml/*.png
-          if git diff --cached --quiet; then
-            echo "PNG files are already up to date."
-            exit 0
-          fi
-          git commit -m "Regenerate UML PNG diagrams from PlantUML sources"
-          git pull --rebase origin main
-          git push
+      - name: Upload rendered PNG diagrams
+        uses: actions/upload-artifact@v4
+        with:
+          name: uml-png-diagrams
+          path: docs/uml/*.png
+          if-no-files-found: error
+          retention-days: 30
