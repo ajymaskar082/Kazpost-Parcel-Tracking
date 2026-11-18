@@ -4,7 +4,7 @@ import java.util.Objects;
 
 /**
  * Common information shared by senders and recipients.
- * Encapsulation is applied through private fields and public getters.
+ * Private fields provide encapsulation; subclasses provide their role label.
  */
 public abstract class Person {
     private final String fullName;
@@ -23,6 +23,8 @@ public abstract class Person {
         }
         return value.trim();
     }
+
+    public abstract String getRoleLabel();
 
     public String getFullName() {
         return fullName;
