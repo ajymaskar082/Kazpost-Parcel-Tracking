@@ -1,35 +1,53 @@
 @startuml
-title Қазпошта — сәлемдеме статусындағы кідіріс проблемасының сценарийі
+title Қазпошта — статус кідірісін тіркеу және сақтау сценарийі
+autonumber
 skinparam shadowing false
 
-actor "Жіберуші" as Sender
-boundary "Қадағалау мәзірі" as Menu
+actor "Пошта қызметкері" as Operator
+boundary "ConsoleMenu" as Menu
 control "ParcelService" as Service
-participant "ParcelRepository" as Repository
-database "Деректер қоры" as DB
+entity "Parcel" as Parcel
+participant "ParcelDao" as DAO
+database "SQLite" as DB
 
-note over Sender,DB
+note over Operator,DB
 ПРОБЛЕМА:
-Сұрыптау орталығына жүктеме артқанда
-өңдеу және жөнелту уақытша кідіруі мүмкін.
-Жаңа статус тіркелмесе, пайдаланушы
-соңғы сақталған ескі ақпаратты ғана көреді.
+Сұрыптау/тасымалдау кезінде жаңа ақпарат уақытында
+енгізілмесе, жүйеде тек соңғы сақталған ескі статус көрінеді.
+Пайдаланушы сәлемдеменің қай кезеңде екенін түсінуде қиналады.
 end note
 
-Sender -> Menu : Трек-нөмірді енгізу
-Menu -> Service : findParcel(trackingNumber)
-Service -> Repository : findByTrackingNumber(number)
-Repository -> DB : SELECT parcel
-Repository -> DB : SELECT latest tracking_event
-DB --> Repository : Сәлемдеме және соңғы сақталған статус
-Repository --> Service : Parcel + соңғы TrackingEvent
-Service --> Menu : Соңғы тіркелген статус пен уақыт
-Menu --> Sender : Ескі статус көрсетіледі
+Operator -> Menu : 4 — статусын жаңарту
+Menu -> Operator : Трек-нөмірді сұрау
+Operator -> Menu : trackingNumber
+Menu -> Service : updateStatus(number, status, description)
+Service -> Service : findParcel(number)
+Service -> DAO : findById(number)
+DAO -> DB : SELECT parcel JOIN senders/recipients/offices
+DAO -> DB : SELECT tracking_events ORDER BY event_id
+DB --> DAO : Parcel деректері және оқиғалар тарихы
+DAO --> Service : Optional<Parcel>
+Service -> Parcel : updateStatus(newStatus, description)
+Parcel -> Parcel : canTransitionTo(newStatus)
+Parcel -> Parcel : status = newStatus
+Parcel -> Parcel : trackingHistory.add(TrackingEvent.create(...))
+Service -> DAO : updateStatus(parcel)
+DAO -> DB : BEGIN TRANSACTION
+DAO -> DB : UPDATE parcels SET status = ?
+DAO -> DB : INSERT INTO tracking_events(...)
+DAO -> DB : COMMIT
+DB --> DAO : Сақтау сәтті
+DAO --> Service : Сәтті аяқталды
+Service --> Menu : Жаңартылған сәлемдеме
+Menu --> Operator : Жаңа статус және оқиға уақыты көрсетіледі
 
-note right of Sender
-Жіберуші сәлемдеменің
-нақты ағымдағы қозғалысын
-анықтай алмайды.
+note over Service,DB
+ШЕШІМ:
+Оператор жаңа расталған ақпаратты енгізгенде,
+Parcel ағымдағы статусты өзгертеді және TrackingEvent
+тарихына уақыт белгісімен оқиға қосады. ParcelDao
+екеуін SQLite-ке бір транзакциямен сақтайды.
+Кейін іздеу кезінде соңғы сақталған статус пен тарих көрсетіледі.
+Жүйе нақты уақыттағы GPS/автоматты сканерлеу емес.
 end note
-
 @enduml
