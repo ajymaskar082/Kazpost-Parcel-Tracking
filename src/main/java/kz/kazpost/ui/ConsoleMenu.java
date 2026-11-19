@@ -1,5 +1,6 @@
 package kz.kazpost.ui;
 
+import kz.kazpost.demo.OopDemo;
 import kz.kazpost.exception.TrackingNumberNotFoundException;
 import kz.kazpost.model.DeliveryStatus;
 import kz.kazpost.model.Parcel;
@@ -50,8 +51,9 @@ public class ConsoleMenu {
                     case "6" -> exportCsv();
                     case "7" -> chooseDeliveryStrategy();
                     case "8" -> exportCsvAsync();
+                    case "9" -> OopDemo.run();
                     case "0" -> running = false;
-                    default -> System.out.println("Мәзірден 0–8 аралығындағы бөлімді таңдаңыз.");
+                    default -> System.out.println("Мәзірден 0–9 аралығындағы бөлімді таңдаңыз.");
                 }
             } catch (TrackingNumberNotFoundException exception) {
                 System.out.println("Қате: " + exception.getMessage());
@@ -79,6 +81,7 @@ public class ConsoleMenu {
                 6. CSV есебін экспорттау
                 7. Жеткізу түрін таңдау
                 8. CSV есебін фондық ағынмен экспорттау
+                9. OOP қағидаларын демонстрациялау
                 0. Шығу
                 -------------------------------
                 Таңдау:
